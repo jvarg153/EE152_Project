@@ -1,0 +1,88 @@
+clc;
+clear;
+close all;
+
+I_Original_Check = rgb2gray(im2double(imread('Check_Original_Vivian.jpg')));
+I_check_1 = rgb2gray(im2double(imread('Check_1_Vivian.JPG')));
+I_check_2 = rgb2gray(im2double(imread('Check_2_Vivian.JPG')));
+I_check_3 = rgb2gray(im2double(imread('Check_3_Vivian.JPG')));
+I_Statement = rgb2gray(im2double(imread('Statement.JPG')));
+
+I_Original_Check_PD = rgb2gray(im2double(imread('Check_Original_Pratyay.JPG')));
+I_check_1_PD = rgb2gray(im2double(imread('Check_1_Pratyay.JPG')));
+I_check_2_PD = rgb2gray(im2double(imread('Check_2_Pratyay.JPG')));
+
+
+% template 
+template = I_Original_Check(300:385, 500:800);
+[t_r, t_c] = size(template);
+
+template_PD = I_Original_Check_PD(270:385, 500:800);
+[t_r_PD, t_c_PD] = size(template_PD);
+
+% Set Threshold
+threshold = 0.75;
+
+checks = {I_Original_Check, I_check_1, I_check_2, I_check_3, I_Statement};
+titles = {'Check Original', 'Check 1', 'Check 2', 'Check 3', 'Statement'};
+
+checks_PD = {I_Original_Check_PD, I_check_1_PD, I_check_2_PD};
+titles_PD = {'Check Original', 'Check 1', 'Check 2'};
+
+for i = 1:length(checks)
+    current_check = checks{i};                                                                                           
+    norm_corr = normxcorr2(template, current_check);   % Does NCC
+    [max_val, idx] = max(norm_corr(:));                % Obatins max score and postion
+    [ypeak, xpeak] = ind2sub(size(norm_corr), idx);    % Converts idx0 to 2D
+    x_box = xpeak - t_c + 1;                           % Gets bounding box croods for x
+    y_box = ypeak - t_r + 1;                           % Gets bounding box croods for y
+    
+    boxed_img = insertShape(current_check, 'rectangle', [x_box, y_box, t_c, t_r], 'Color', 'r', 'LineWidth', 2);
+    
+    figure;
+    subplot(2,2,1); 
+    imshow(template); 
+    title('Template');
+
+    subplot(2,2,2); 
+    imshow(current_check); 
+    title(titles{i});
+
+    subplot(2,2,4); 
+    imshow(boxed_img);
+    if max_val > threshold
+        title(['REAL CHECK | Score = ', num2str(max_val, '%.3f')]);
+    else
+        title(['FAKE CHECK DETECTED | Score = ', num2str(max_val, '%.3f')]);
+    end
+
+end
+
+for i = 1:length(checks_PD)
+    current_check = checks_PD{i};
+    norm_corr = normxcorr2(template_PD, current_check);
+    [max_val, idx] = max(norm_corr(:));
+    [ypeak, xpeak] = ind2sub(size(norm_corr), idx);
+    x_box = xpeak - t_c_PD + 1;
+    y_box = ypeak - t_r_PD + 1;
+    
+    boxed_img = insertShape(current_check, 'rectangle', [x_box, y_box, t_c, t_r], 'Color', 'r', 'LineWidth', 2);
+    
+    figure;
+    subplot(2,2,1); 
+    imshow(template_PD); 
+    title('Template');
+
+    subplot(2,2,2); 
+    imshow(current_check); 
+    title(titles_PD{i});
+
+    subplot(2,2,4); 
+    imshow(boxed_img);
+    if max_val > threshold
+        title(['REAL CHECK | Score = ', num2str(max_val, '%.3f')]);
+    else
+        title(['FAKE CHECK DETECTED | Score = ', num2str(max_val, '%.3f')]);
+    end
+
+end
