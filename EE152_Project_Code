@@ -22,6 +22,7 @@ template_PD = I_Original_Check_PD(270:385, 500:800);
 
 % Set Threshold
 threshold = 0.75;
+threshold_PD = 0.65;
 
 checks = {I_Original_Check, I_check_1, I_check_2, I_check_3, I_Statement};
 titles = {'Check Original', 'Check 1', 'Check 2', 'Check 3', 'Statement'};
@@ -79,7 +80,7 @@ for i = 1:length(checks_PD)
 
     subplot(2,2,4); 
     imshow(boxed_img);
-    if max_val > threshold
+    if max_val > threshold_PD
         title(['REAL CHECK | Score = ', num2str(max_val, '%.3f')]);
     else
         title(['FAKE CHECK DETECTED | Score = ', num2str(max_val, '%.3f')]);
